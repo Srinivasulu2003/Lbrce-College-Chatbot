@@ -8,15 +8,17 @@ from llama_index.llms.huggingface import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from pydantic import BaseModel
 import datetime
+from dotenv import load_dotenv
+load_dotenv()
 # Define Pydantic model for incoming request body
 class MessageRequest(BaseModel):
     message: str
 
 
-os.environ["HF_TOKEN"] = ""
+os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="D:\SRUNU (1)\content\SRUNU\static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Configure Llama index settings
@@ -24,7 +26,7 @@ Settings.llm = HuggingFaceInferenceAPI(
     model_name="meta-llama/Meta-Llama-3-8B-Instruct",
     tokenizer_name="meta-llama/Meta-Llama-3-8B-Instruct",
     context_window=3000,
-    token="",
+    token=os.getenv("HF_TOKEN"),
     max_new_tokens=512,
     generate_kwargs={"temperature": 0.1},
 )
