@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #chat-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        #chat-history {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+
+        #user-input {
+            width: calc(100% - 90px);
+        }
+
+        button {
+            padding: 10px;
+        }
+    </style>
+    <title>Chat Interface</title>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-history"></div>
+        <input type="text" id="user-input" placeholder="Type your message..." aria-label="Message input">
+        <button id="send-button" aria-label="Send message">Send</button>
+    </div>
+    <script>
+        document.getElementById("send-button").addEventListener("click", sendMessage);
+        document.getElementById("user-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const message = input.value.trim();
+
+            if (message === "") {
+                return; // Do not send empty messages
+            }
+
+            // Add user message to chat history
+            addMessage("User", message);
+
+            // Clear input field
+            input.value = "";
+
+            try {
+                // Send message to the backend
+                const response = await fetch("/chat/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                addMessage("Bot", data.response);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage("Bot", "Sorry, something went wrong.");
+            }
+        }
+
+        function addMessage(sender, message) {
+            const chatHistory = document.getElementById("chat-history");
+            const messageElement = document.createElement("div");
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatHistory.appendChild(messageElement);
+            chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to the bottom
+        }
+    </script>
+</body>
+</html>
