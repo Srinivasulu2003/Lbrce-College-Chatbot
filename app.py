@@ -47,7 +47,7 @@ async def favicon():
     return HTMLResponse("")  # or serve a real favicon if you have one
 
 
-app.mount("/static", StaticFiles(directory="D:\SRUNU (1)\content\SRUNU\static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="static")
 # Configure Llama index settings
