@@ -1,15 +1,19 @@
 import os
 import time
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from llama_index.core import StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, ChatPromptTemplate, Settings
 from llama_index.llms.huggingface import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+import uuid  # for generating unique IDs
 import datetime
-from dotenv import load_dotenv
-load_dotenv()
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+
+
 # Define Pydantic model for incoming request body
 class MessageRequest(BaseModel):
     message: str
@@ -18,9 +22,34 @@ class MessageRequest(BaseModel):
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = "frame-ancestors *; frame-src *; object-src *;"
+    response.headers["X-Frame-Options"] = "ALLOWALL"
+    return response
 
 
+# Allow CORS requests from any domain
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return HTMLResponse("")  # or serve a real favicon if you have one
+
+
+app.mount("/static", StaticFiles(directory="D:\SRUNU (1)\content\SRUNU\static"), name="static")
+
+templates = Jinja2Templates(directory="static")
 # Configure Llama index settings
 Settings.llm = HuggingFaceInferenceAPI(
     model_name="meta-llama/Meta-Llama-3-8B-Instruct",
@@ -89,10 +118,27 @@ def handle_query(query):
         response ="Sorry, I couldn't find an answer."
     current_chat_history.append((query, response))
     return response
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
-    with open("static/index.html") as f:
-        return f.read()
+@app.get("/ch/{id}", response_class=HTMLResponse)
+async def load_chat(request: Request, id: str):
+    return templates.TemplateResponse("index.html", {"request": request, "user_id": id})
+# Route to save chat history
+@app.post("/hist/")
+async def save_chat_history(history: dict):
+    # Logic to save chat history, using the `id` from the frontend
+    print(history)  # You can replace this with actual save logic
+    return {"message": "Chat history saved"}
+@app.post("/webhook")
+async def receive_form_data(request: Request):
+    form_data = await request.json()
+    
+    # Generate a unique ID (for tracking user)
+    unique_id = str(uuid.uuid4())
+    
+    # Here you can do something with form_data like saving it to a database
+    print("Received form data:", form_data)
+    
+    # Send back the unique id to the frontend
+    return JSONResponse({"id": unique_id})
 
 @app.post("/chat/")
 async def chat(request: MessageRequest):
@@ -106,5 +152,9 @@ async def chat(request: MessageRequest):
     }
     chat_history.append(message_data)
     return {"response": response}
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the API"}
+
 
 
