@@ -12,11 +12,46 @@ import uuid  # for generating unique IDs
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
+from huggingface_hub import InferenceClient
+import json
+import re
 
 
 # Define Pydantic model for incoming request body
 class MessageRequest(BaseModel):
     message: str
+repo_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+llm_client = InferenceClient(
+    model=repo_id,
+    token=os.getenv("HF_TOKEN"),
+)
+def summarize_conversation(inference_client: InferenceClient, history: list):
+    # Construct the full prompt with history
+    history_text = "\n".join([f"{entry['sender']}: {entry['message']}" for entry in history])
+    full_prompt = f"{history_text}\n\nSummarize the conversation in three concise points only give me only Summarization in python list formate :\n"
+
+    response = inference_client.post(
+        json={
+            "inputs": full_prompt,
+            "parameters": {"max_new_tokens": 512},
+            "task": "text-generation",
+        },
+    )
+    
+    # Decode the response
+    generated_text = json.loads(response.decode())[0]["generated_text"]
+
+    # Use regex to extract the list inside brackets
+    matches = re.findall(r'\[(.*?)\]', generated_text)
+
+    # If matches found, extract the content
+    if matches:
+        # Assuming we only want the first match, split by commas and strip whitespace
+        list_items = matches[0].split(',')
+        cleaned_list = [item.strip() for item in list_items]
+        return cleaned_list
+    else:
+        return generated_text
 
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
@@ -44,7 +79,7 @@ app.add_middleware(
 
 @app.get("/favicon.ico")
 async def favicon():
-    return HTMLResponse("")  # or serve a real favicon if you have one
+    return HTMLResponse("")  # or serve a real favicon if you have one
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -124,9 +159,16 @@ async def load_chat(request: Request, id: str):
 # Route to save chat history
 @app.post("/hist/")
 async def save_chat_history(history: dict):
-    # Logic to save chat history, using the `id` from the frontend
-    print(history)  # You can replace this with actual save logic
-    return {"message": "Chat history saved"}
+    # Check if 'history' is a key in the incoming dictionary
+    user_id = history.get('userId')
+    print(user_id)
+    if 'history' in history and isinstance(history['history'], list):
+        print("Received history:", history['history'])  # Debugging line
+        cleaned_summary = summarize_conversation(llm_client, history['history'])
+        print("Cleaned summary:", cleaned_summary)  # Debugging line
+        return {"summary": cleaned_summary, "message": "Chat history saved"}
+    else:
+        return JSONResponse(status_code=400, content={"message": "Invalid history format"})
 @app.post("/webhook")
 async def receive_form_data(request: Request):
     form_data = await request.json()
@@ -155,6 +197,3 @@ async def chat(request: MessageRequest):
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the API"}
-
-
-
