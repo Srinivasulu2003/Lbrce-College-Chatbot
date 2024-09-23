@@ -15,6 +15,7 @@ from fastapi.templating import Jinja2Templates
 from huggingface_hub import InferenceClient
 import json
 import re
+from simple_salesforce import Salesforce, SalesforceLogin
 
 
 # Define Pydantic model for incoming request body
@@ -55,7 +56,18 @@ def summarize_conversation(inference_client: InferenceClient, history: list):
 
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
+username = os.getenv("username")
+password = os.getenv("password")
+security_token = os.getenv("security_token")
+domain =  os.getenv("domain")# Using sandbox environment
+
+# Log in to Salesforce
+session_id, sf_instance = SalesforceLogin(username=username, password=password, security_token=security_token, domain=domain)
+
+# Create Salesforce object
+sf = Salesforce(instance=sf_instance, session_id=session_id)
 app = FastAPI()
+
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
@@ -116,6 +128,22 @@ def initialize():
     start_time = time.time()
     data_ingestion_from_directory()  # Process PDF ingestion at startup
     print(f"Data ingestion time: {time.time() - start_time} seconds")
+def split_name(full_name):
+    # Split the name by spaces
+    words = full_name.strip().split()
+    
+    # Logic for determining first name and last name
+    if len(words) == 1:
+        first_name = ''
+        last_name = words[0]
+    elif len(words) == 2:
+        first_name = words[0]
+        last_name = words[1]
+    else:
+        first_name = words[0]
+        last_name = ' '.join(words[1:])
+    
+    return first_name, last_name
 
 initialize()  # Run initialization tasks
 
@@ -166,6 +194,7 @@ async def save_chat_history(history: dict):
         print("Received history:", history['history'])  # Debugging line
         cleaned_summary = summarize_conversation(llm_client, history['history'])
         print("Cleaned summary:", cleaned_summary)  # Debugging line
+        sf.Lead.update(user_id,{'Description': cleaned_summary})
         return {"summary": cleaned_summary, "message": "Chat history saved"}
     else:
         return JSONResponse(status_code=400, content={"message": "Invalid history format"})
@@ -173,6 +202,16 @@ async def save_chat_history(history: dict):
 async def receive_form_data(request: Request):
     form_data = await request.json()
     
+    first_name, last_name = split_name(form_data['name'])
+    data = {
+    'FirstName': first_name,
+    'LastName': last_name,
+    'Description': 'hii',  # Static description
+    'Company': form_data['company'],  # Assuming company is available in form_data
+    'Phone': form_data['phone'].strip(),  # Phone from form data
+    'Email': form_data['email'],  # Email from form data
+    }
+    a=sf.Lead.create(data)
     # Generate a unique ID (for tracking user)
     unique_id = str(uuid.uuid4())
     
@@ -180,7 +219,7 @@ async def receive_form_data(request: Request):
     print("Received form data:", form_data)
     
     # Send back the unique id to the frontend
-    return JSONResponse({"id": unique_id})
+    return JSONResponse({"id": a})
 
 @app.post("/chat/")
 async def chat(request: MessageRequest):
