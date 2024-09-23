@@ -194,7 +194,10 @@ async def save_chat_history(history: dict):
         print("Received history:", history['history'])  # Debugging line
         cleaned_summary = summarize_conversation(llm_client, history['history'])
         print("Cleaned summary:", cleaned_summary)  # Debugging line
-        sf.Lead.update(user_id,{'Description': cleaned_summary})
+        cleaned_summary = cleaned_summary.strip(" []'")
+        cleaned_summary_list = [item.strip(" '") for item in cleaned_summary.split(',')]
+        cleaned_summary_str = ' '.join(cleaned_summary_list)
+        sf.Lead.update(user_id,{'Description': cleaned_summary_str})
         return {"summary": cleaned_summary, "message": "Chat history saved"}
     else:
         return JSONResponse(status_code=400, content={"message": "Invalid history format"})
