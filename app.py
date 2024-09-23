@@ -48,6 +48,7 @@ def summarize_conversation(history: list):
     
     # Decode the result
     generated_text = result
+    return result
 
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
