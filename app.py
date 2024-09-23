@@ -219,7 +219,7 @@ async def receive_form_data(request: Request):
     print("Received form data:", form_data)
     
     # Send back the unique id to the frontend
-    return JSONResponse({"id": a})
+    return JSONResponse({"id": a['id']})
 
 @app.post("/chat/")
 async def chat(request: MessageRequest):
