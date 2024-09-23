@@ -15,6 +15,7 @@ from fastapi.templating import Jinja2Templates
 from huggingface_hub import InferenceClient
 import json
 import re
+from gradio_client import Client
 from simple_salesforce import Salesforce, SalesforceLogin
 
 
