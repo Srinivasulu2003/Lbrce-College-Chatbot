@@ -5,4 +5,5 @@ llama-index-llms-huggingface
 uvicorn
 simple-salesforce
 salesforce-bulk
+gradio-client
 fastapi
