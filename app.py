@@ -213,13 +213,13 @@ async def receive_form_data(request: Request):
     }
     a=sf.Lead.create(data)
     # Generate a unique ID (for tracking user)
-    unique_id = str(uuid.uuid4())
+    unique_id = a['id']
     
     # Here you can do something with form_data like saving it to a database
     print("Received form data:", form_data)
     
     # Send back the unique id to the frontend
-    return JSONResponse({"id": a['id']})
+    return JSONResponse({"id": unique_id})
 
 @app.post("/chat/")
 async def chat(request: MessageRequest):
