@@ -26,33 +26,27 @@ llm_client = InferenceClient(
     model=repo_id,
     token=os.getenv("HF_TOKEN"),
 )
-def summarize_conversation(inference_client: InferenceClient, history: list):
-    # Construct the full prompt with history
+def summarize_conversation(history: list):
+    # Construct the conversation history text
     history_text = "\n".join([f"{entry['sender']}: {entry['message']}" for entry in history])
-    full_prompt = f"{history_text}\n\nSummarize the conversation in three concise points only give me only Summarization in python list formate :\n"
-
-    response = inference_client.post(
-        json={
-            "inputs": full_prompt,
-            "parameters": {"max_new_tokens": 512},
-            "task": "text-generation",
-        },
+    
+    # Create a client instance
+    client = Client("vilarin/Llama-3.1-8B-Instruct")
+    
+    # Predict the summary using the new parameters
+    result = client.predict(
+        message=history_text,
+        system_prompt="tell me what user interest using bellow conversation give me answer within 20 to 60 words",
+        temperature=0.8,
+        max_new_tokens=1024,
+        top_p=1,
+        top_k=20,
+        penalty=1.2,
+        api_name="/chat"
     )
     
-    # Decode the response
-    generated_text = json.loads(response.decode())[0]["generated_text"]
-
-    # Use regex to extract the list inside brackets
-    matches = re.findall(r'\[(.*?)\]', generated_text)
-
-    # If matches found, extract the content
-    if matches:
-        # Assuming we only want the first match, split by commas and strip whitespace
-        list_items = matches[0].split(',')
-        cleaned_list = [item.strip() for item in list_items]
-        return cleaned_list
-    else:
-        return generated_text
+    # Decode the result
+    generated_text = result
 
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
@@ -192,12 +186,9 @@ async def save_chat_history(history: dict):
     print(user_id)
     if 'history' in history and isinstance(history['history'], list):
         print("Received history:", history['history'])  # Debugging line
-        cleaned_summary = summarize_conversation(llm_client, history['history'])
+        cleaned_summary = summarize_conversation(history['history'])
         print("Cleaned summary:", cleaned_summary)  # Debugging line
-        cleaned_summary = cleaned_summary.strip(" []'")
-        cleaned_summary_list = [item.strip(" '") for item in cleaned_summary.split(',')]
-        cleaned_summary_str = ' '.join(cleaned_summary_list)
-        sf.Lead.update(user_id,{'Description': cleaned_summary_str})
+        sf.Lead.update(user_id,{'Description': cleaned_summary})
         return {"summary": cleaned_summary, "message": "Chat history saved"}
     else:
         return JSONResponse(status_code=400, content={"message": "Invalid history format"})
