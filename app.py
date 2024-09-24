@@ -32,22 +32,14 @@ def summarize_conversation(history: list):
     history_text = "\n".join([f"{entry['sender']}: {entry['message']}" for entry in history])
     
     # Create a client instance
-    client = Client("vilarin/Llama-3.1-8B-Instruct")
-    
-    # Predict the summary using the new parameters
+    client = Client("Qwen/Qwen2.5-72B-Instruct")
     result = client.predict(
-        message=history_text,
-        system_prompt="tell me what user interest using bellow conversation give me answer within 20 to 60 words",
-        temperature=0.8,
-        max_new_tokens=1024,
-        top_p=1,
-        top_k=20,
-        penalty=1.2,
-        api_name="/chat"
-    )
-    
-    # Decode the result
-    generated_text = result
+		query=history_text,
+		history=[],
+		system="you are a sumarization model your goal is to find the user interest based on conversation",
+		api_name="/model_chat"
+        )
+    print(result)
     return result
 
 
