@@ -27,7 +27,7 @@ llm_client = InferenceClient(
     model=repo_id,
     token=os.getenv("HF_TOKEN"),
 )
-client = Client("srinuksv/Qwen2.5-72B-Instruct")
+client = Client("Be-Bo/llama-3-chatbot_70b")
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 username = os.getenv("username")
 password = os.getenv("password")
@@ -167,11 +167,9 @@ async def save_chat_history(history: dict):
     hist = "summarize this context and tell me user interest: " + hist
     print(hist)
     result = client.predict(
-            query=hist,
-            history=[],
-            system="You are clara, created by redferntech. You are a helpful assistant.",
-            api_name="/predict"
-        )
+		message=hist,
+		api_name="/chat"
+     )
     sf.Lead.update(user_id,{'Description': result})
     return {"summary": result, "message": "Chat history saved"}
 @app.post("/webhook")
