@@ -27,25 +27,7 @@ llm_client = InferenceClient(
     model=repo_id,
     token=os.getenv("HF_TOKEN"),
 )
-def summarize_conversation(history: list):
-    try:
-        hist = ''.join([f"'{entry['sender']}: {entry['message']}'\n" for entry in history])
-        hist = "summarize this context and tell me user interest: " + hist
-
-        client = Client("Qwen/Qwen2.5-72B-Instruct")
-        result = client.predict(
-            query=hist,
-            history=[],
-            system="You are clara, created by redferntech. You are a helpful assistant.",
-            api_name="/predict"
-        )
-        return result
-    except Exception as e:
-        print(f"Summarization error: {str(e)}")
-        return "Error during summarization"
-
-
-
+client = Client("Qwen/Qwen2.5-72B-Instruct")
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 username = os.getenv("username")
 password = os.getenv("password")
@@ -181,14 +163,17 @@ async def save_chat_history(history: dict):
     # Check if 'history' is a key in the incoming dictionary
     user_id = history.get('userId')
     print(user_id)
-    if 'history' in history and isinstance(history['history'], list):
-        print("Received history:", history['history'])  # Debugging line
-        cleaned_summary = summarize_conversation(history['history'])
-        print("Cleaned summary:", cleaned_summary,type(cleaned_summary))  # Debugging line
-        sf.Lead.update(user_id,{'Description': cleaned_summary})
-        return {"summary": cleaned_summary, "message": "Chat history saved"}
-    else:
-        return JSONResponse(status_code=400, content={"message": "Invalid history format"})
+    hist = ''.join([f"'{entry['sender']}: {entry['message']}'\n" for entry in history['history']])
+    hist = "summarize this context and tell me user interest: " + hist
+    print(hist)
+    result = client.predict(
+            query=hist,
+            history=[],
+            system="You are clara, created by redferntech. You are a helpful assistant.",
+            api_name="/predict"
+        )
+    sf.Lead.update(user_id,{'Description': result})
+    return {"summary": result, "message": "Chat history saved"}
 @app.post("/webhook")
 async def receive_form_data(request: Request):
     form_data = await request.json()
