@@ -29,12 +29,16 @@ llm_client = InferenceClient(
 )
 def summarize_conversation(history: list):
     # Construct the conversation history text
-    history_text = "\n".join([f"{entry['sender']}: {entry['message']}" for entry in history])
-    
+    hist=''
+    for entry in history:
+        sender = entry['sender']
+        message = entry['message']
+        hist += f" '{sender}: {message}'\n"
+    hist="summarize this context what user need"+hist
     # Create a client instance
     client = Client("Qwen/Qwen2.5-72B-Instruct")
     result = client.predict(
-		query=history_text,
+		query=hist,
 		history=[],
 		system="you are a sumarization model your goal is to find the user interest based on conversation",
 		api_name="/model_chat"
@@ -181,7 +185,7 @@ async def save_chat_history(history: dict):
     if 'history' in history and isinstance(history['history'], list):
         print("Received history:", history['history'])  # Debugging line
         cleaned_summary = summarize_conversation(history['history'])
-        print("Cleaned summary:", cleaned_summary)  # Debugging line
+        print("Cleaned summary:", cleaned_summary,type(cleaned_summary))  # Debugging line
         sf.Lead.update(user_id,{'Description': cleaned_summary})
         return {"summary": cleaned_summary, "message": "Chat history saved"}
     else:
