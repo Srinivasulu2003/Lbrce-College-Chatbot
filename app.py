@@ -160,17 +160,28 @@ async def load_chat(request: Request, id: str):
 # Route to save chat history
 @app.post("/hist/")
 async def save_chat_history(history: dict):
-    # Check if 'history' is a key in the incoming dictionary
+    # Check if 'userId' is present in the incoming dictionary
     user_id = history.get('userId')
     print(user_id)
+
+    # Ensure user_id is defined before proceeding
+    if user_id is None:
+        return {"error": "userId is required"}, 400
+
+    # Construct the chat history string
     hist = ''.join([f"'{entry['sender']}: {entry['message']}'\n" for entry in history['history']])
-    hist = "summarize this context and tell me user interest: " + hist
+    hist = "You are a Redfernstech summarize model. Your aim is to use this conversation to identify user interests solely based on that conversation: " + hist
     print(hist)
+
+    # Get the summarized result from the client model
     result = client.predict(
-		message=hist,
-		api_name="/chat"
-     )
-    sf.Lead.update(user_id,{'Description': result})
+        message=hist,
+        api_name="/chat"
+    )
+
+    # Update the lead's description with the summary result
+    sf.Lead.update(user_id, {'Description': result})
+    
     return {"summary": result, "message": "Chat history saved"}
 @app.post("/webhook")
 async def receive_form_data(request: Request):
