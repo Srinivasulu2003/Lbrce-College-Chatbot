@@ -159,19 +159,24 @@
             }
         }
         
-        function addMessage(sender, message, className) {
-            const chatHistory = document.getElementById("chat-history");
-            const messageElement = document.createElement("div");
-            messageElement.className = `message ${className}`;
-            const icon = sender === "User" ? '<i class="fas fa-user user-icon"></i>' : '<i class="fas fa-user-tie"></i>';
-            messageElement.innerHTML = `${icon}<div>${message} <span class="timestamp">${new Date().toLocaleTimeString()}</span></div>`;
-            messageElement.onclick = function() {
-                const timestamp = messageElement.querySelector('.timestamp');
-                timestamp.style.display = timestamp.style.display === 'none' ? 'block' : 'none';
-            };
-            chatHistory.appendChild(messageElement);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
+function addMessage(sender, message, className) {
+    const chatHistory = document.getElementById("chat-history");
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${className}`;
+    // Check if the message contains a URL
+    const linkRegex = /(https?:\/\/[^\s]+)/g;
+    const formattedMessage = message.replace(linkRegex, function(url) {
+        return `<a href="${url}" target="_blank">click here</a>`;
+    });
+    const icon = sender === "User" ? '<i class="fas fa-user user-icon"></i>' : '<i class="fas fa-user-tie"></i>';
+    messageElement.innerHTML = `${icon}<div>${formattedMessage} <span class="timestamp">${new Date().toLocaleTimeString()}</span></div>`;
+    messageElement.onclick = function() {
+        const timestamp = messageElement.querySelector('.timestamp');
+        timestamp.style.display = timestamp.style.display === 'none' ? 'block' : 'none';
+    };
+    chatHistory.appendChild(messageElement);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
         
         function showTypingIndicator() {
             const typingElement = document.createElement("div");
