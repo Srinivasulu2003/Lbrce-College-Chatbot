@@ -166,8 +166,25 @@ function addMessage(sender, message, className) {
     // Check if the message contains a URL
     const linkRegex = /(https?:\/\/[^\s]+)/g;
     const formattedMessage = message.replace(linkRegex, function(url) {
-        return `<a href="${url}" target="_blank">click here</a>`;
+    let linkText;
+
+    if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=6d605bd9-de3c-49d3-9fa4-ec3caabd5d63") {
+        linkText = "Visit this link to check out the Product Filter App.";
+    } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=e671f4fe-92fb-4760-99e5-7a5df5754cfe") {
+        linkText = "Visit this link to check out the Mass Approvals App.";
+    } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=3473ffd3-d530-462f-828f-d2c69f80d89d") {
+        linkText = "Visit this link to check out the Thumbnail Viewer App.";
+    } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=6d605bd9-de3c-49d3-9fa4-ec3caabd5d63") {
+        linkText = "Visit this link to check out the Currency Conversion App.";
+    } else if (url === "https://redfernstech.com/careers/") {
+        linkText = "Visit this link to check out the careers.";
+    } else {
+        linkText = "Visit this link."; // Fallback for other URLs
+    }
+
+    return `<a href="${url}" target="_blank">${linkText}</a>`;
     });
+
     const icon = sender === "User" ? '<i class="fas fa-user user-icon"></i>' : '<i class="fas fa-user-tie"></i>';
     messageElement.innerHTML = `${icon}<div>${formattedMessage} <span class="timestamp">${new Date().toLocaleTimeString()}</span></div>`;
     messageElement.onclick = function() {
