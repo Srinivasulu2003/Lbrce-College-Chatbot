@@ -27,7 +27,7 @@ llm_client = InferenceClient(
     model=repo_id,
     token=os.getenv("HF_TOKEN"),
 )
-client = Client("Qwen/Qwen2.5-72B-Instruct")
+client = Client("srinuksv/Qwen2.5-72B-Instruct")
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 username = os.getenv("username")
 password = os.getenv("password")
