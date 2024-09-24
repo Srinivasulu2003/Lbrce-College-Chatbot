@@ -28,23 +28,22 @@ llm_client = InferenceClient(
     token=os.getenv("HF_TOKEN"),
 )
 def summarize_conversation(history: list):
-    # Construct the conversation history text
-    hist=''
-    for entry in history:
-        sender = entry['sender']
-        message = entry['message']
-        hist += f" '{sender}: {message}'\n"
-    hist="summarize this context what user need"+hist
-    # Create a client instance
-    client = Client("Qwen/Qwen2.5-72B-Instruct")
-    result = client.predict(
-		query=hist,
-		history=[],
-		system="you are a sumarization model your goal is to find the user interest based on conversation",
-		api_name="/model_chat"
+    try:
+        hist = ''.join([f"'{entry['sender']}: {entry['message']}'\n" for entry in history])
+        hist = "summarize this context and tell me user interest: " + hist
+
+        client = Client("Qwen/Qwen2.5-72B-Instruct")
+        result = client.predict(
+            query=hist,
+            history=[],
+            system="You are clara, created by redferntech. You are a helpful assistant.",
+            api_name="/predict"
         )
-    print(result)
-    return result
+        return result
+    except Exception as e:
+        print(f"Summarization error: {str(e)}")
+        return "Error during summarization"
+
 
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
