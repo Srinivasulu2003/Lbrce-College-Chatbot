@@ -34,11 +34,7 @@ password = os.getenv("password")
 security_token = os.getenv("security_token")
 domain =  os.getenv("domain")# Using sandbox environment
 
-# Log in to Salesforce
-session_id, sf_instance = SalesforceLogin(username=username, password=password, security_token=security_token, domain=domain)
 
-# Create Salesforce object
-sf = Salesforce(instance=sf_instance, session_id=session_id)
 app = FastAPI()
 
 
@@ -188,7 +184,11 @@ async def save_chat_history(history: dict):
 @app.post("/webhook")
 async def receive_form_data(request: Request):
     form_data = await request.json()
-    
+    # Log in to Salesforce
+    session_id, sf_instance = SalesforceLogin(username=username, password=password, security_token=security_token, domain=domain)
+
+    # Create Salesforce object
+    sf = Salesforce(instance=sf_instance, session_id=session_id)
     first_name, last_name = split_name(form_data['name'])
     data = {
     'FirstName': first_name,
