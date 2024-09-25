@@ -179,8 +179,10 @@ async def save_chat_history(history: dict):
         api_name="/chat"
     )
 
-    # Update the lead's description with the summary result
-    sf.Lead.update(user_id, {'Description': result})
+    try:
+        sf.Lead.update(user_id, {'Description': result})
+    except Exception as e:
+        return {"error": f"Failed to update lead: {str(e)}"}, 500
     
     return {"summary": result, "message": "Chat history saved"}
 @app.post("/webhook")
