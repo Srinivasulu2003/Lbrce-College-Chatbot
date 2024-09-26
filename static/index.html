@@ -186,7 +186,7 @@
                 console.error('Error sending chat history on close:', error);
             } finally {
                 const chatContainer = document.getElementById("chat-container");
-                window.open('https://redfernstech.com/chat-bot-test/', '_self'); // Or use chatContainer.remove(); to completely remove it
+                window.top.location.href = 'https://redfernstech.com/chat-bot-test/'; // Or use chatContainer.remove(); to completely remove it
             }
         }
 
