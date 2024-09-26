@@ -186,7 +186,7 @@
                 console.error('Error sending chat history on close:', error);
             } finally {
                 const chatContainer = document.getElementById("chat-container");
-                window.parent.goBackToChat(); // Or use chatContainer.remove(); to completely remove it
+                window.parent.postMessage('goBackToChat', 'https://redfernstech.com/chat-bot-test/'); // Or use chatContainer.remove(); to completely remove it
             }
         }
 
