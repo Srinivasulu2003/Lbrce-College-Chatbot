@@ -78,7 +78,7 @@
         .btn-close {
             position: absolute; /* Keep it absolute within the chat container */
             top: 10px; /* Adjust top position */
-            left: 10px; /* Adjust left position */
+            right: 10px; /* Adjust left position */
             background-color: #dc3545; /* Red color for close button */
             color: white;
             border: none; /* Remove border for a cleaner look */
@@ -111,7 +111,7 @@
     <div id="chat-container" class="rounded p-4 shadow">
         <input type="hidden" id="user-id" value="{{ user_id }}">
         <button id="close-button" class="btn btn-close" aria-label="Close chat">
-            <i class="fas fa-times"></i>
+            <i class="fas fa-arrow-left"></i>
         </button>
         <div id="chat-history" class="mb-3"></div>
         <div id="loading" class="spinner-border text-primary" role="status">
