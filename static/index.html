@@ -186,7 +186,7 @@
                 console.error('Error sending chat history on close:', error);
             } finally {
                 const chatContainer = document.getElementById("chat-container");
-                chatContainer.style.display = 'none'; // Or use chatContainer.remove(); to completely remove it
+                window.parent.goBackToChat(); // Or use chatContainer.remove(); to completely remove it
             }
         }
 
