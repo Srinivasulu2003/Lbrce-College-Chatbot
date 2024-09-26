@@ -19,7 +19,6 @@
             border-radius: 30px;
             background-color: #fafafa;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            position: relative;
         }
         #chat-history {
             height: 530px;
@@ -74,13 +73,24 @@
             background-color: #007bff;
             color: white;
         }
-        .btn-close {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-close:hover {
-            background-color: #c82333;
-        }
+      .btn-close {
+    position: absolute; /* Positioning it absolutely within the chat container */
+    top: 10px; /* Adjust top position */
+    left: 10px; /* Adjust left position */
+    background-color: #dc3545; /* Red color for close button */
+    color: white;
+    border: none; /* Remove border for a cleaner look */
+    border-radius: 50%; /* Round shape */
+    width: 30px; /* Set width */
+    height: 30px; /* Set height */
+    display: flex; /* Flexbox for centering icon */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+}
+.btn-close:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
         .typing-indicator {
             font-style: italic;
             color: #aaa;
@@ -92,23 +102,12 @@
             display: none;
             margin-top: 5px;
         }
-        .close-chat-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-        }
     </style>
     <title>Chat Interface</title>
 </head>
 <body>
     <div id="chat-container" class="rounded p-4 shadow">
         <input type="hidden" id="user-id" value="{{ user_id }}">
-        <button id="close-button" class="close-chat-button" aria-label="Close chat">
-            <i class="fas fa-times fa-lg"></i>
-        </button>
         <div id="chat-history" class="mb-3"></div>
         <div id="loading" class="spinner-border text-primary" role="status">
             <span class="sr-only">Loading...</span>
@@ -118,6 +117,9 @@
             <div class="input-group-append">
                 <button id="send-button" class="btn btn-icon" aria-label="Send message">
                     <i class="fas fa-paper-plane"></i>
+                </button>
+                <button id="close-button" class="btn btn-close" aria-label="Close chat">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
         </div>
@@ -168,37 +170,38 @@
             }
         }
         
-        function addMessage(sender, message, className) {
-            const chatHistory = document.getElementById("chat-history");
-            const messageElement = document.createElement("div");
-            messageElement.className = `message ${className}`;
-            const linkRegex = /(https?:\/\/[^\s]+)/g;
-            const formattedMessage = message.replace(linkRegex, function(url) {
-                let linkText;
-                if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=cf4b19d4-8667-49f7-83b0-d2bc4032527b") {
-                    linkText = "Visit this link to check out the Product Filter App.";
-                } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=e671f4fe-92fb-4760-99e5-7a5df5754cfe") {
-                    linkText = "Visit this link to check out the Mass Approvals App.";
-                } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=3473ffd3-d530-462f-828f-d2c69f80d89d") {
-                    linkText = "Visit this link to check out the Thumbnail Viewer App.";
-                } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=6d605bd9-de3c-49d3-9fa4-ec3caabd5d63") {
-                    linkText = "Visit this link to check out the Currency Conversion App.";
-                } else if (url === "https://redfernstech.com/careers/") {
-                    linkText = "Visit this link to check out the careers.";
-                } else {
-                    linkText = "Visit this link."; // Fallback for other URLs
-                }
-                return `<a href="${url}" target="_blank">${linkText}</a>`;
-            });
-            const icon = sender === "User" ? '<i class="fas fa-user user-icon"></i>' : '<i class="fas fa-user-tie"></i>';
-            messageElement.innerHTML = `${icon}<div>${formattedMessage} <span class="timestamp">${new Date().toLocaleTimeString()}</span></div>`;
-            messageElement.onclick = function() {
-                const timestamp = messageElement.querySelector('.timestamp');
-                timestamp.style.display = timestamp.style.display === 'none' ? 'block' : 'none';
-            };
-            chatHistory.appendChild(messageElement);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
+function addMessage(sender, message, className) {
+    const chatHistory = document.getElementById("chat-history");
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${className}`;
+    // Check if the message contains a URL
+    const linkRegex = /(https?:\/\/[^\s]+)/g;
+    const formattedMessage = message.replace(linkRegex, function(url) {
+    let linkText;
+    if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=cf4b19d4-8667-49f7-83b0-d2bc4032527b") {
+        linkText = "Visit this link to check out the Product Filter App.";
+    } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=e671f4fe-92fb-4760-99e5-7a5df5754cfe") {
+        linkText = "Visit this link to check out the Mass Approvals App.";
+    } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=3473ffd3-d530-462f-828f-d2c69f80d89d") {
+        linkText = "Visit this link to check out the Thumbnail Viewer App.";
+    } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=6d605bd9-de3c-49d3-9fa4-ec3caabd5d63") {
+        linkText = "Visit this link to check out the Currency Conversion App.";
+    } else if (url === "https://redfernstech.com/careers/") {
+        linkText = "Visit this link to check out the careers.";
+    } else {
+        linkText = "Visit this link."; // Fallback for other URLs
+    }
+    return `<a href="${url}" target="_blank">${linkText}</a>`;
+    });
+    const icon = sender === "User" ? '<i class="fas fa-user user-icon"></i>' : '<i class="fas fa-user-tie"></i>';
+    messageElement.innerHTML = `${icon}<div>${formattedMessage} <span class="timestamp">${new Date().toLocaleTimeString()}</span></div>`;
+    messageElement.onclick = function() {
+        const timestamp = messageElement.querySelector('.timestamp');
+        timestamp.style.display = timestamp.style.display === 'none' ? 'block' : 'none';
+    };
+    chatHistory.appendChild(messageElement);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
         
         function showTypingIndicator() {
             const typingElement = document.createElement("div");
@@ -227,7 +230,7 @@
             } catch (error) {
                 console.error('Error sending chat history:', error);
             } finally {
-                window.open('https://redfernstech.com/chat-bot-test', '_blank');
+                window.open('https://redfernstech.com/', '_blank');
             }
         }
     </script>
