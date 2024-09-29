@@ -114,9 +114,6 @@
             <i class="fas fa-arrow-left"></i>
         </button>
         <div id="chat-history" class="mb-3"></div>
-        <div id="loading" class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
         <div class="input-group mb-2">
             <textarea id="user-input" class="form-control" rows="2" placeholder="Type your message..." aria-label="Message input"></textarea>
             <div class="input-group-append">
@@ -125,6 +122,7 @@
                 </button>
             </div>
         </div>
+        <small class="form-text text-muted">Press Shift + Enter for a new line</small>
     </div>    
     <script>
         let chatHistoryArray = [];
@@ -138,39 +136,38 @@
         document.getElementById("close-button").addEventListener("click", closeChat);
         
         async function sendMessage() {
-            const input = document.getElementById("user-input");
-            const userId = document.getElementById("user-id").value;
-            const message = input.value.trim();
-            if (message === "") {
-                return;
-            }
-            addMessage("User", message, "user-message");
-            chatHistoryArray.push({ userId, sender: "User", message });
-            input.value = "";
-            document.getElementById("loading").style.display = "block";
-            showTypingIndicator();
-            try {
-                const response = await fetch("/chat/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ message })
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                const data = await response.json();
-                addMessage("Bot", data.response, "bot-message");
-                chatHistoryArray.push({ userId, sender: "Bot", message: data.response });
-            } catch (error) {
-                console.error('Error:', error);
-                addMessage("Bot", "Sorry, something went wrong.", "bot-message");
-            } finally {
-                document.getElementById("loading").style.display = "none";
-                hideTypingIndicator();
-            }
+    const input = document.getElementById("user-input");
+    const userId = document.getElementById("user-id").value;
+    const message = input.value.trim();
+    if (message === "") {
+        return;
+    }
+    addMessage("User", message, "user-message");
+    chatHistoryArray.push({ userId, sender: "User", message });
+    input.value = "";
+    showTypingIndicator();
+    try {
+        const response = await fetch("/chat/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message })
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        const data = await response.json();
+        addMessage("Bot", data.response, "bot-message");
+        chatHistoryArray.push({ userId, sender: "Bot", message: data.response });
+    } catch (error) {
+        console.error('Error:', error);
+        addMessage("Bot", "Sorry, something went wrong.", "bot-message");
+    } finally {
+        hideTypingIndicator();
+    }
+}
+
         
         async function closeChat() {
             const userId = document.getElementById("user-id").value;
@@ -189,30 +186,36 @@
                 window.top.location.href = 'https://redfernstech.com/chat-bot-test/'; // Or use chatContainer.remove(); to completely remove it
             }
         }
-
         function addMessage(sender, message, className) {
-            const chatHistory = document.getElementById("chat-history");
-            const messageElement = document.createElement("div");
-            messageElement.className = `message ${className}`;
-            // Check if the message contains a URL
-            const linkRegex = /(https?:\/\/[^\s]+)/g;
-            const formattedMessage = message.replace(linkRegex, function(url) {
-                let linkText;
-                if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=cf4b19d4-8667-49f7-83b0-d2bc4032527b") {
-                    linkText = "Visit this link to check out the Product Filter App.";
-                } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=e671f4fe-92fb-4760-99e5-7a5df5754cfe") {
-                    linkText = "Visit this link to check out the Mass Approvals App.";
-                } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=3473ffd3-d530-462f-828f-d2c69f80d89d") {
-                    linkText = "Visit this link to check out the Related Records App.";
-                } else {
-                    linkText = url;
-                }
-                return `<a href="${url}" target="_blank">${linkText}</a>`;
-            });
-            messageElement.innerHTML = `<span class="${sender.toLowerCase()}-icon">${sender === "User" ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>'}</span>${formattedMessage}<div class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
-            chatHistory.appendChild(messageElement);
-            chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to bottom
+    const chatHistory = document.getElementById("chat-history");
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${className}`;
+    // Check if the message contains a URL
+    const linkRegex = /(https?:\/\/[^\s]+)/g;
+    const formattedMessage = message.replace(linkRegex, function(url) {
+        let linkText;
+        if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=cf4b19d4-8667-49f7-83b0-d2bc4032527b") {
+            linkText = "Visit this link to check out the Product Filter App.";
+        } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=e671f4fe-92fb-4760-99e5-7a5df5754cfe") {
+            linkText = "Visit this link to check out the Mass Approvals App.";
+        } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=3473ffd3-d530-462f-828f-d2c69f80d89d") {
+            linkText = "Visit this link to check out the Thumbnail Viewer App.";
+        } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=6d605bd9-de3c-49d3-9fa4-ec3caabd5d63") {
+            linkText = "Visit this link to check out the Currency Conversion App.";
+        } else if (url === "https://redfernstech.com/careers/") {
+            linkText = "Visit this link to check out the careers.";
+        } else {
+            linkText = "Visit this link."; // Fallback for other URLs
         }
+        return `<a href="${url}" target="_blank">${linkText}</a>`;
+    });
+    messageElement.innerHTML = `<span class="${sender.toLowerCase()}-icon">
+        ${sender === "User" ? '<i class="fas fa-user"></i>' : '<img src="https://raw.githubusercontent.com/SRINIVASULU-2003/srinu/refs/heads/main/static/bot.jpeg" alt="Bot" style="width: 20px; height: 20px; border-radius: 50%;">'}
+    </span>${formattedMessage}<div class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
+    chatHistory.appendChild(messageElement);
+    chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to bottom
+}
+
         
         function showTypingIndicator() {
             const chatHistory = document.getElementById("chat-history");
