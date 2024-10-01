@@ -210,15 +210,15 @@ async function sendMessage() {
     const formattedMessage = message.replace(linkRegex, function(url) {
         let linkText;
         if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=cf4b19d4-8667-49f7-83b0-d2bc4032527b") {
-            linkText = "Visit this link to check out the Product Filter App.";
+            linkText = "Product Filter";
         } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=e671f4fe-92fb-4760-99e5-7a5df5754cfe") {
-            linkText = "Visit this link to check out the Mass Approvals App.";
+            linkText = "Mass Approvals";
         } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=3473ffd3-d530-462f-828f-d2c69f80d89d") {
-            linkText = "Visit this link to check out the Thumbnail Viewer App.";
+            linkText = "Thumbnail Viewer";
         } else if (url === "https://appexchange.salesforce.com/appxListingDetail?listingId=6d605bd9-de3c-49d3-9fa4-ec3caabd5d63") {
-            linkText = "Visit this link to check out the Currency Conversion App.";
+            linkText = "Currency Conversion";
         } else if (url === "https://redfernstech.com/careers/") {
-            linkText = "Visit this link to check out the careers.";
+            linkText = "careers";
         } else {
             linkText = "Visit this link."; // Fallback for other URLs
         }
