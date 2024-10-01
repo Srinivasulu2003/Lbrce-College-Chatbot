@@ -135,7 +135,19 @@
         });
         document.getElementById("close-button").addEventListener("click", closeChat);
         
-        async function sendMessage() {
+       window.addEventListener('DOMContentLoaded', () => {
+    sendInitialBotMessage(); // Trigger initial message when chatbot opens
+});
+
+function sendInitialBotMessage() {
+    const userId = document.getElementById("user-id").value;
+    const initialMessage = "Hello! How can I assist you today?"; // Initial bot message
+
+    addMessage("Bot", initialMessage, "bot-message"); // Display the initial bot message
+    chatHistoryArray.push({ userId, sender: "Bot", message: initialMessage }); // Save to chat history
+}
+
+async function sendMessage() {
     const input = document.getElementById("user-input");
     const userId = document.getElementById("user-id").value;
     const message = input.value.trim();
@@ -167,6 +179,9 @@
         hideTypingIndicator();
     }
 }
+
+
+
 
         
         async function closeChat() {
