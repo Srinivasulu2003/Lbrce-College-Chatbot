@@ -220,7 +220,7 @@ async function sendMessage() {
         return `<a href="${url}" target="_blank">${linkText}</a>`;
     });
     messageElement.innerHTML = `<span class="${sender.toLowerCase()}-icon">
-        ${sender === "User" ? '<i class="fas fa-user"></i>' : '<img src="https://raw.githubusercontent.com/SRINIVASULU-2003/srinu/refs/heads/main/static/bot.jpeg" alt="Bot" style="width: 20px; height: 20px; border-radius: 50%;">'}
+        ${sender === "User" ? '<i class="fas fa-user"></i>' : '<img src="https://i.ibb.co/khk6Ywx/bot.jpg" alt="Bot" style="width: 20px; height: 20px; border-radius: 50%;">'}
     </span>${formattedMessage}<div class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
     chatHistory.appendChild(messageElement);
     chatHistory.scrollTop = chatHistory.scrollHeight; // Scroll to bottom
