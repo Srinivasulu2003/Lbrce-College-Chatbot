@@ -27,7 +27,7 @@ llm_client = InferenceClient(
     model=repo_id,
     token=os.getenv("HF_TOKEN"),
 )
-client = Client("Be-Bo/llama-3-chatbot_70b")
+client = Client("llamameta/Qwen2.5-Coder-32B-Instruct-Chat-Assistant")
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 username = os.getenv("username")
 password = os.getenv("password")
