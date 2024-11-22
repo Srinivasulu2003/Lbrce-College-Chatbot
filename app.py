@@ -27,7 +27,7 @@ llm_client = InferenceClient(
     model=repo_id,
     token=os.getenv("HF_TOKEN"),
 )
-client = Client("llamameta/Qwen2.5-Coder-32B-Instruct-Chat-Assistant")
+
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 username = os.getenv("username")
 password = os.getenv("password")
@@ -173,10 +173,7 @@ async def save_chat_history(history: dict):
     print(hist)
 
     # Get the summarized result from the client model
-    result = client.predict(
-        message=hist,
-        api_name="/chat"
-    )
+    result = hist
 
     try:
         sf.Lead.update(user_id, {'Description': result})
