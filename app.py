@@ -191,5 +191,6 @@ async def chat(request: MessageRequest):
     return {"response": response}
 
 @app.get("/")
-def read_root():
-    return {"message": "Welcome to the API"}
+def read_root(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
+
