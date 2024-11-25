@@ -112,7 +112,7 @@ def handle_query(query):
         (
             "user",
             """
-            You are the Clara Redfernstech chatbot. Your goal is to provide accurate, professional, and helpful answers to user queries based on the company's data. Always ensure your responses are clear and concise. Give response within 10-15 words only       
+            You are the srinu college chatbot. Your goal is to provide accurate, professional, and helpful answers to user queries based on the college's data. Always ensure your responses are clear and concise. Give response within 10-15 words only       
             {context_str}
             Question:
             {query_str}
