@@ -192,8 +192,7 @@ async function sendMessage() {
             } catch (error) {
                 console.error('Error sending chat history on close:', error);
             } finally {
-                const chatContainer = document.getElementById("chat-container");
-                window.top.location.href = 'https://redfernstech.com/'; // Or use chatContainer.remove(); to completely remove it
+                 window.history.back();
             }
         }
         function addMessage(sender, message, className) {
