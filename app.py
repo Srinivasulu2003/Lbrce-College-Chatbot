@@ -161,15 +161,8 @@ async def save_chat_history(history: dict):
     hist = ''.join([f"'{entry['sender']}: {entry['message']}'\n" for entry in history['history']])
     hist = "You are a Redfernstech summarize model. Your aim is to use this conversation to identify user interests solely based on that conversation: " + hist
     print(hist)
-
     # Get the summarized result from the client model
-    result = hist
-
-    try:
-        sf.Lead.update(user_id, {'Description': result})
-    except Exception as e:
-        return {"error": f"Failed to update lead: {str(e)}"}, 500
-    
+    result = hist    
     return {"summary": result, "message": "Chat history saved"}
 
 
