@@ -1,6 +1,6 @@
 import os
 import time
-from fastapi import FastAPI,Request
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from llama_index.core import StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, ChatPromptTemplate, Settings
@@ -15,12 +15,12 @@ from fastapi.templating import Jinja2Templates
 from huggingface_hub import InferenceClient
 import json
 import re
-
-
+from gradio_client import Client
 
 # Define Pydantic model for incoming request body
 class MessageRequest(BaseModel):
     message: str
+
 repo_id = "meta-llama/Meta-Llama-3-8B-Instruct"
 llm_client = InferenceClient(
     model=repo_id,
@@ -29,9 +29,7 @@ llm_client = InferenceClient(
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
 
-
 app = FastAPI()
-
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
@@ -39,7 +37,6 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Content-Security-Policy"] = "frame-ancestors *; frame-src *; object-src *;"
     response.headers["X-Frame-Options"] = "ALLOWALL"
     return response
-
 
 # Allow CORS requests from any domain
 app.add_middleware(
@@ -50,17 +47,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-
 @app.get("/favicon.ico")
 async def favicon():
     return HTMLResponse("")  # or serve a real favicon if you have one
 
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="static")
+
 # Configure Llama index settings
 Settings.llm = HuggingFaceInferenceAPI(
     model_name="meta-llama/Meta-Llama-3-8B-Instruct",
@@ -82,6 +76,7 @@ os.makedirs(PDF_DIRECTORY, exist_ok=True)
 os.makedirs(PERSIST_DIR, exist_ok=True)
 chat_history = []
 current_chat_history = []
+
 def data_ingestion_from_directory():
     documents = SimpleDirectoryReader(PDF_DIRECTORY).load_data()
     storage_context = StorageContext.from_defaults()
@@ -92,6 +87,7 @@ def initialize():
     start_time = time.time()
     data_ingestion_from_directory()  # Process PDF ingestion at startup
     print(f"Data ingestion time: {time.time() - start_time} seconds")
+
 def split_name(full_name):
     # Split the name by spaces
     words = full_name.strip().split()
@@ -110,7 +106,6 @@ def split_name(full_name):
     return first_name, last_name
 
 initialize()  # Run initialization tasks
-
 
 def handle_query(query):
     chat_text_qa_msgs = [
@@ -133,19 +128,23 @@ def handle_query(query):
         if past_query.strip():
             context_str += f"User asked: '{past_query}'\nBot answered: '{response}'\n"
 
-    
     query_engine = index.as_query_engine(text_qa_template=text_qa_template, context_str=context_str)
     answer = query_engine.query(query)
 
     if hasattr(answer, 'response'):
-        response=answer.response
+        response = answer.response
     elif isinstance(answer, dict) and 'response' in answer:
-        response =answer['response']
+        response = answer['response']
     else:
-        response ="Sorry, I couldn't find an answer."
+        response = "Sorry, I couldn't find an answer."
     current_chat_history.append((query, response))
     return response
 
+@app.get("/ch/{id}", response_class=HTMLResponse)
+async def load_chat(request: Request, id: str):
+    return templates.TemplateResponse("index.html", {"request": request, "user_id": id})
+
+# Route to save chat history
 @app.post("/hist/")
 async def save_chat_history(history: dict):
     # Check if 'userId' is present in the incoming dictionary
@@ -160,10 +159,23 @@ async def save_chat_history(history: dict):
     hist = ''.join([f"'{entry['sender']}: {entry['message']}'\n" for entry in history['history']])
     hist = "You are a Redfernstech summarize model. Your aim is to use this conversation to identify user interests solely based on that conversation: " + hist
     print(hist)
+
     # Get the summarized result from the client model
-    result = hist    
+    result = hist
+
     return {"summary": result, "message": "Chat history saved"}
 
+@app.post("/webhook")
+async def receive_form_data(request: Request):
+    form_data = await request.json()
+    # Generate a unique ID (for tracking user)
+    unique_id = str(uuid.uuid4())
+    
+    # Here you can do something with form_data like saving it to a database
+    print("Received form data:", form_data)
+    
+    # Send back the unique id to the frontend
+    return JSONResponse({"id": unique_id})
 
 @app.post("/chat/")
 async def chat(request: MessageRequest):
@@ -177,7 +189,7 @@ async def chat(request: MessageRequest):
     }
     chat_history.append(message_data)
     return {"response": response}
-@app.get("/", response_class=HTMLResponse)
-async def load_chat(request: Request, id: str):
-    return templates.TemplateResponse("index.html", {"request": request, "user_id": id})
-# Route to save chat history
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the API"}
