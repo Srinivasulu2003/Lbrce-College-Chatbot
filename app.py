@@ -29,14 +29,7 @@ llm_client = InferenceClient(
 )
 
 os.environ["HF_TOKEN"] = os.getenv("HF_TOKEN")
-username = os.getenv("username")
-password = os.getenv("password")
-security_token = os.getenv("security_token")
-domain =  os.getenv("domain")# Using sandbox environment
-session_id, sf_instance = SalesforceLogin(username=username, password=password, security_token=security_token, domain=domain)
 
-    # Create Salesforce object
-sf = Salesforce(instance=sf_instance, session_id=session_id)
 
 app = FastAPI()
 
@@ -153,10 +146,7 @@ def handle_query(query):
         response ="Sorry, I couldn't find an answer."
     current_chat_history.append((query, response))
     return response
-@app.get("/ch/{id}", response_class=HTMLResponse)
-async def load_chat(request: Request, id: str):
-    return templates.TemplateResponse("index.html", {"request": request, "user_id": id})
-# Route to save chat history
+
 @app.post("/hist/")
 async def save_chat_history(history: dict):
     # Check if 'userId' is present in the incoming dictionary
@@ -181,28 +171,7 @@ async def save_chat_history(history: dict):
         return {"error": f"Failed to update lead: {str(e)}"}, 500
     
     return {"summary": result, "message": "Chat history saved"}
-@app.post("/webhook")
-async def receive_form_data(request: Request):
-    form_data = await request.json()
-    # Log in to Salesforce
-    first_name, last_name = split_name(form_data['name'])
-    data = {
-    'FirstName': first_name,
-    'LastName': last_name,
-    'Description': 'hii',  # Static description
-    'Company': form_data['company'],  # Assuming company is available in form_data
-    'Phone': form_data['phone'].strip(),  # Phone from form data
-    'Email': form_data['email'],  # Email from form data
-    }
-    a=sf.Lead.create(data)
-    # Generate a unique ID (for tracking user)
-    unique_id = a['id']
-    
-    # Here you can do something with form_data like saving it to a database
-    print("Received form data:", form_data)
-    
-    # Send back the unique id to the frontend
-    return JSONResponse({"id": unique_id})
+
 
 @app.post("/chat/")
 async def chat(request: MessageRequest):
@@ -216,6 +185,7 @@ async def chat(request: MessageRequest):
     }
     chat_history.append(message_data)
     return {"response": response}
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the API"}
+@app.get("/", response_class=HTMLResponse)
+async def load_chat(request: Request, id: str):
+    return templates.TemplateResponse("index.html", {"request": request, "user_id": id})
+# Route to save chat history
