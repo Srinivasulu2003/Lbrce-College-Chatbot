@@ -28,8 +28,8 @@ This is a FastAPI-based chatbot designed to provide quick and professional respo
 ### Installation
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-repo/s-college-chatbot.git
-   cd srinu-college-chatbot
+   git clone https://github.com/Srinivasulu2003/Lbrce-College-Chatbot.git
+   cd Lbrce-College-Chatbot
    ```
 2. Create and activate a virtual environment:
    ```sh
@@ -87,7 +87,7 @@ This is a FastAPI-based chatbot designed to provide quick and professional respo
 This project is licensed under the MIT License.
 
 ## Contributors
-- **Srinu** - Developer & Maintainer
+- **SRINIVASULU KETHANABOINA** - Developer & Maintainer
 
 For queries and contributions, feel free to open an issue or pull request.
 
